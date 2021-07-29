@@ -1,0 +1,213 @@
+<!DOCTYPE html>{% load i18n dataplotting summaries %}
+<html lang="en">
+  {% load static %}
+  <head>
+    <meta charset="utf-8">
+    <title>
+      {% block dataserver_pagetitle %}
+      {% trans "Arduino Dataserver" %}
+      {% endblock %}
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block dataserver_description %}{% trans "Here is a lot of dataserver" %}{% endblock %}">
+    <meta name="author" content="Benjamin Bach">
+
+    <!-- Le styles -->
+    <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datepicker.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+      .carousel .chartcontainer {
+        visibility: hidden;
+      }
+      .carousel .active .chartcontainer {
+        visibility: visible;
+      }
+    </style>
+    <style type="text/css" media="print">
+      .topbar, .noprint { display: none; }
+      body, .container {margin: 0 !important; padding: 0 !important;}
+    </style>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    
+    <script src="{% static 'js/jquery-1.7.2.min.js' %}"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      charts_redraw = new Array();
+    </script>
+    
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <!--
+    <link rel="shortcut icon" href="{{ STATIC_URL }}dataserver/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ STATIC_URL }}dataserver/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ STATIC_URL }}dataserver/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="{{ STATIC_URL }}dataserver/ico/apple-touch-icon-57-precomposed.png">
+    -->
+    
+  </head>
+
+  <body>
+
+    <div class="topbar navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="{% url 'arduino_server_index' %}">
+            {% block dataserver_sitetitle %}
+            {% trans "Arduino Dataserver" %}
+            {% endblock %}
+          </a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#">{% trans "Overview" %}</a></li>
+              {% for meter_type in meter_types %}
+                <li class="dropdown">
+                  <a href="#about" class="dropdown-toggle" data-toggle="dropdown">
+                    {{ meter_type.name }}
+                    <b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu">
+                  {% for meter in meter_type.meter_set.all %}
+                    <li>
+                      <a href="{% url 'arduino_server_meter' pk=meter.id %}">{{ meter.name }}</a>
+                    </li>
+                  {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      
+      {% if messages %}
+        <div class="row">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:"success" }} span4">
+            <a class="close" data-dismiss="alert">×</a>
+            {{ message|linebreaks }}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+      
+      {% block dataserver_content %}
+
+      <!-- Main hero unit for a primary marketing message or call to action -->
+      <div class="hero-unit carousel" id="overview_carousel">
+        <div class="carousel-inner" style="margin: 0 10px; min-height: 300px; overflow: hidden;">
+          
+          {% for meter in slideshow_meters %}
+            <div class="item{% if forloop.first %} active{% endif %}">
+              <div style="padding-bottom: 50px; background-color: #FFF;">
+                {% google_chart meter.default_interval %}
+              </div>
+              <div class="carousel-caption">
+                <h4 class="span3">{{ meter.default_interval }}</h4>
+                <p class="pull-right">
+                  {% for meter2 in meter.default_interval.meter_set.all %}
+                    <a class="btn btn-primary" href="{% url 'arduino_server_meter' meter2.id %}">{{ meter2.name|capfirst }} &raquo;</a>
+                  {% endfor %}
+                </p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        <!-- Carousel nav -->
+        <a class="carousel-control left" href="#overview_carousel" data-slide="prev">&lsaquo;</a>
+        <a class="carousel-control right" href="#overview_carousel" data-slide="next">&rsaquo;</a>
+      </div>
+
+      <!-- Example row of columns -->
+      
+      <div class="row">
+      
+        {% for meter in meters %}
+        <div class="span4">
+          <h2>{{ meter.name }} <small>{{ meter.meter_type }}</h2>
+          {{ meter.description|truncatewords:30|linebreaks }}
+          <table class="table table-striped">  
+            <tbody>  
+              <tr>  
+                <td>{% trans "Latest update" %}:</td>  
+                <td>{{ meter.get_latest_data.created|default:_("None") }}</td>  
+              </tr>
+              {% if meter.is_counter %}
+              <tr>  
+                <td>{% trans "Last 5 minutes" %}:</td>  
+                <td>{% get_latest_minutes_sum meter 5 %} {{ meter.unit_name|default:"" }}</td>
+              </tr>
+              <tr>  
+                <td>{% trans "Last 60 minutes" %}:</td>  
+                <td>{% get_latest_minutes_sum meter 60 %} {{ meter.unit_name|default:"" }}</td>
+              </tr>
+              {% else %}
+              <tr>  
+                <td>{% trans "Latest reading" %}:</td>  
+                <td>{{ meter.get_latest_data.data_point|default:_("None") }} {{ meter.unit_name|default:"" }}</td>  
+              </tr>              
+              {% endif %}
+              </tbody>
+            </table>
+          <p><a class="btn" href="{% url 'arduino_server_meter' meter.id %}">View details &raquo;</a></p>
+        </div>
+        
+        {% endfor %}
+      
+      </div>
+      {% endblock %}
+
+      <hr>
+
+      <footer class="footer noprint">
+        <p>&copy; Benjamin Bach 2012 <a href="https://github.com/benjaoming/arduino-dataserver">clone me @github</a></p>
+        <p>
+          {% trans "Arduino Dataserver is an open source project under " %}<a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>. <br />
+          {% trans "This is Arduino Dataserver running on Twitter Bootstrap." %}
+        </p>
+      </footer>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-dropdown.js' %}"></script>
+    <script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
+    <script type="text/javascript">
+      $('.dropdown-toggle').dropdown()
+      $('.carousel').carousel({
+        interval: 100000000000000
+      });
+      $('.carousel').bind('slid', function() {
+        active_chart = $(this).find('.active .chartcontainer');
+        func_and_args = charts_redraw[active_chart.attr('id')];
+        if (func_and_args) {
+          func_and_args[0].draw(func_and_args[1], func_and_args[2]);
+          //charts_redraw[active_chart.attr('id')] = null;
+          active_chart.fadeIn('fast');
+        }
+      });
+    </script>
+    
+  </body>
+</html>
+
