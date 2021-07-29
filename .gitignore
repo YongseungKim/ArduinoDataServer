@@ -75,7 +75,7 @@ fabric.properties
 
 venv/
 
-.env
+#.env
 .db.sqlite3
 .idea
 db.sqlite3
@@ -85,5 +85,5 @@ Scripts/
 Lib/
 Include/
 pyvenv.cfg
-
+manage.py
 db.sqlite3
