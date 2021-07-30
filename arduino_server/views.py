@@ -32,14 +32,14 @@ def index(request):
     slideshow_meters = models.Meter.objects.exclude(default_interval=None).order_by('name')
 
     context = RequestContext(request,
-                       {'slideshow_meters': slideshow_meters,
-                        })
+                             {'slideshow_meters': slideshow_meters,
+                              })
     return render_and_add_context(request, "arduino_server/main.html", context)
 
 
 def meter(request, meter_id):
     meter = get_object_or_404(models.Meter, id=meter_id)
-
+    print('meter', meter.id, meter.name)
     if request.method == 'POST':
         data_form = forms.MeterDataForm(request.POST)
         print("form read")
@@ -66,10 +66,11 @@ def meter(request, meter_id):
                      'data_point': request.session.get('data_point', None),
                      })
 
-    context = RequestContext(request, {'meter': meter,
-                                       'data_form': data_form,
-                                       })
-    return render_and_add_context(request, "arduino_server/meter.html", context)
+    context = {'meter': meter,
+               'data_form': data_form,
+               }
+
+    return render(request, template_name="arduino_server/meter.html", context=context)
 
 
 def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
