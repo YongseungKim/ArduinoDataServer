@@ -80,10 +80,9 @@ venv/
 .idea
 db.sqlite3
 __pycache__/
-media/
+
 Scripts/
 Lib/
-Include/
 pyvenv.cfg
 manage.py
 db.sqlite3
