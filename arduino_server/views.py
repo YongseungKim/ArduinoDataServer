@@ -16,14 +16,24 @@ def hello_world(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 
+def render_to_response_and_add_context(template, c):
+    meter_types = models.MeterType.objects.all().order_by("name")
+    meters = models.Meter.objects.all()
+
+    c.update({'meter_types': meter_types,
+              'meters': meters, })
+
+    # return render_to_response(template, c)
+
+
 def render_and_add_context(request, template, context):
     meter_types = models.MeterType.objects.all().order_by("name")
     meters = models.Meter.objects.all()
 
-    context = {
+    context.update({
         'meter_types': meter_types,
         'meters': meters,
-    }
+    })
 
     return render(request, template, context)
 
@@ -31,20 +41,16 @@ def render_and_add_context(request, template, context):
 def index(request):
     slideshow_meters = models.Meter.objects.exclude(default_interval=None).order_by('name')
 
-    context = RequestContext(request,
-                             {'slideshow_meters': slideshow_meters,
-                              })
+    context = {'slideshow_meters': slideshow_meters, }
+    # context = RequestContext(request, c)
     return render_and_add_context(request, "arduino_server/main.html", context)
 
 
 def meter(request, meter_id):
     meter = get_object_or_404(models.Meter, id=meter_id)
-    print('meter', meter.id, meter.name)
     if request.method == 'POST':
         data_form = forms.MeterDataForm(request.POST)
-        print("form read")
         if data_form.is_valid():
-            print("form valid")
             data = data_form.save(commit=False)
             data.meter = meter
             data.created = datetime.combine(data_form.cleaned_data['created_date'],
@@ -55,10 +61,10 @@ def meter(request, meter_id):
 
             data.save()  # db save
             messages.success(request, _(u"Data entry added and summaries updated!"))
-            # return HttpResponseRedirect(reverse('arduino_server_meter'), args=(meter.id,))
-            # return redirect('arduino_server_meter', meter.id)
+            return HttpResponseRedirect(reverse('arduino_server:arduino_server_meter', args=(meter.id,)))
+            # return redirect('arduino_server/meter.html', meter.id)
             # return render(request, 'arduino_server/meter.html', {'arduino_server_meter': meter})
-            return redirect('arduino_server_meter', meter)
+            # return redirect('arduino_server:arduino_server_meter', meter.id)
     else:
         data_form = forms.MeterDataForm(
             initial={'created_date': request.session.get('created_date', datetime.now().date),
@@ -70,7 +76,9 @@ def meter(request, meter_id):
                'data_form': data_form,
                }
 
-    return render(request, template_name="arduino_server/meter.html", context=context)
+    # context = RequestContext(request, c)
+    return render_and_add_context(request, "arduino_server/meter.html", context)
+    # return render(request, template_name="arduino_server/meter.html", context=context)
 
 
 def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
@@ -134,4 +142,4 @@ def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
         "rows": [({"c": [{"v": get_google_date(i.to_time), 'f': get_google_label(i.from_time, i.to_time)},
                          {"v": i.total}]}) for i in intervals],
     })
-    return HttpResponse(data, mimetype='application/json')
+    return HttpResponse(data, content_type='application/json')

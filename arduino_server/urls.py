@@ -11,7 +11,7 @@ urlpatterns = [
     # path(r'^meter/(\d+)/$', views.meter, name="arduino_server_meter"),
     # path(r'^interval/(\d+)/json/$', views.interval_json, name="arduino_server_interval_json"),
     path('meter/<int:meter_id>/', views.meter, name="arduino_server_meter"),
-    path('interval/<int:meter_id>/json/', views.interval_json, name="arduino_server_interval_json"),
+    path('interval/<int:interval_type_id>/json/', views.interval_json, name="arduino_server_interval_json"),
 
 ]
 
