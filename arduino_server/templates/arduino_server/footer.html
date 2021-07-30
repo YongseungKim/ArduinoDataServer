@@ -1,0 +1,33 @@
+{% load i18n dataplotting summaries %}
+{% load static %}
+
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/bootstrap-dropdown.js' %}"></script>
+<script src="{% static 'js/bootstrap-datepicker.js' %}"></script>
+<script type="text/javascript">
+  $('.dropdown-toggle').dropdown()
+  $('.carousel').carousel({
+    interval: 100000000000000
+  });
+  $('.carousel').bind('slid', function() {
+    active_chart = $(this).find('.active .chartcontainer');
+    func_and_args = charts_redraw[active_chart.attr('id')];
+    if (func_and_args) {
+      func_and_args[0].draw(func_and_args[1], func_and_args[2]);
+      //charts_redraw[active_chart.attr('id')] = null;
+      active_chart.fadeIn('fast');
+    }
+  });
+</script>
+
+<hr>
+<footer class="footer noprint" style="text-align: center">
+    <p>&copy; Benjamin Bach 2012 <a href="https://github.com/benjaoming/arduino-dataserver">clone me @github</a></p>
+    <p>
+        {% trans "Arduino Dataserver is an open source project under " %}<a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>. <br />
+        {% trans "This is Arduino Dataserver running on Twitter Bootstrap." %}
+    </p>
+</footer>

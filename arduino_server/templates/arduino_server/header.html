@@ -1,0 +1,40 @@
+{% load i18n dataplotting summaries %}
+{% load static %}
+
+<div class="topbar navbar navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+      <a class="brand" href="{% url 'arduino_server:arduino_server_index' %}">
+        {% block dataserver_sitetitle %}
+        {% trans "Arduino Dataserver" %}
+        {% endblock %}
+      </a>
+      <div class="nav-collapse">
+        <ul class="nav">
+          <li class="active"><a href="#">{% trans "Overview" %}</a></li>
+          {% for meter_type in meter_types %}
+            <li class="dropdown">
+              <a href="#about" class="dropdown-toggle" data-toggle="dropdown">
+                {{ meter_type.name }}
+                <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+              {% for meter in meter_type.meter_set.all %}
+                <li>
+                  {% csrf_token %}
+                  <a href="{% url 'arduino_server:arduino_server_meter' meter_id=meter.id %}">{{ meter.name }}</a>
+                </li>
+              {% endfor %}
+              </ul>
+            </li>
+          {% endfor %}
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </div>
+</div>

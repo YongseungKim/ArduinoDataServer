@@ -108,7 +108,7 @@ class MeterData(models.Model):
         u"It is used if the meter is an incremental counter. "
         u"If you do not fill it out, it is filled out automatically"),
         blank=True, null=True)
-    created = models.DateTimeField()
+    created = models.DateTimeField(auto_now_add=True, null=True)
 
     def save(self, *args, **kwargs):
         # Set how much was incremented by...

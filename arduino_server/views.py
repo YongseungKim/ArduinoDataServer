@@ -1,8 +1,10 @@
 from datetime import datetime
 from django.contrib import messages
 from django.core.serializers import json
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import RequestContext
+from django.urls import reverse
+
 from arduino_server import models, forms
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
@@ -14,14 +16,24 @@ def hello_world(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 
+def render_to_response_and_add_context(template, c):
+    meter_types = models.MeterType.objects.all().order_by("name")
+    meters = models.Meter.objects.all()
+
+    c.update({'meter_types': meter_types,
+              'meters': meters, })
+
+    # return render_to_response(template, c)
+
+
 def render_and_add_context(request, template, context):
     meter_types = models.MeterType.objects.all().order_by("name")
     meters = models.Meter.objects.all()
 
-    context = {
+    context.update({
         'meter_types': meter_types,
         'meters': meters,
-    }
+    })
 
     return render(request, template, context)
 
@@ -29,15 +41,13 @@ def render_and_add_context(request, template, context):
 def index(request):
     slideshow_meters = models.Meter.objects.exclude(default_interval=None).order_by('name')
 
-    c = RequestContext(request,
-                       {'slideshow_meters': slideshow_meters,
-                        })
-    return render_and_add_context(request, "arduino_server/base.html", c)
+    context = {'slideshow_meters': slideshow_meters, }
+    # context = RequestContext(request, c)
+    return render_and_add_context(request, "arduino_server/main.html", context)
 
 
 def meter(request, meter_id):
     meter = get_object_or_404(models.Meter, id=meter_id)
-
     if request.method == 'POST':
         data_form = forms.MeterDataForm(request.POST)
         if data_form.is_valid():
@@ -49,9 +59,12 @@ def meter(request, meter_id):
             request.session['created_date'] = data_form.cleaned_data['created_date']
             request.session['data_point'] = data_form.cleaned_data['data_point']
 
-            data.save()
+            data.save()  # db save
             messages.success(request, _(u"Data entry added and summaries updated!"))
-            return redirect('arduino_server_meter', meter.id)
+            return HttpResponseRedirect(reverse('arduino_server:arduino_server_meter', args=(meter.id,)))
+            # return redirect('arduino_server/meter.html', meter.id)
+            # return render(request, 'arduino_server/meter.html', {'arduino_server_meter': meter})
+            # return redirect('arduino_server:arduino_server_meter', meter.id)
     else:
         data_form = forms.MeterDataForm(
             initial={'created_date': request.session.get('created_date', datetime.now().date),
@@ -59,10 +72,13 @@ def meter(request, meter_id):
                      'data_point': request.session.get('data_point', None),
                      })
 
-    context = RequestContext(request, {'meter': meter,
-                                       'data_form': data_form,
-                                       })
+    context = {'meter': meter,
+               'data_form': data_form,
+               }
+
+    # context = RequestContext(request, c)
     return render_and_add_context(request, "arduino_server/meter.html", context)
+    # return render(request, template_name="arduino_server/meter.html", context=context)
 
 
 def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
@@ -126,4 +142,4 @@ def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
         "rows": [({"c": [{"v": get_google_date(i.to_time), 'f': get_google_label(i.from_time, i.to_time)},
                          {"v": i.total}]}) for i in intervals],
     })
-    return HttpResponse(data, mimetype='application/json')
+    return HttpResponse(data, content_type='application/json')
