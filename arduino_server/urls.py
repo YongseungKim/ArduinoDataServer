@@ -1,7 +1,8 @@
 from django.conf.urls import url
 from django.urls import path, include
-
 from arduino_server import views
+
+app_name = 'arduino_server'
 
 urlpatterns = [
     # path('', views.hello_world, name="hello_world"),

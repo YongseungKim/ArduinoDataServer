@@ -87,6 +87,8 @@ def insert_interval(meter_data, name_id, from_time, interval=None):
         latest_reading = models.MeterData.objects.filter(meter=meter_data.meter).exclude(id=meter_data.id).order_by(
             '-created')
 
+        # created = latest_reading[0].created
+        # print(latest_reading[0].created)
         if latest_reading and latest_reading[0].created > meter_data.created:
             # Something has been updated
             recalculate_interval(meter_data.meter, name_id, from_time, interval=interval)
