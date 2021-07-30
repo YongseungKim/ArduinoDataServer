@@ -86,4 +86,3 @@ Lib/
 Include/
 pyvenv.cfg
 manage.py
-db.sqlite3
