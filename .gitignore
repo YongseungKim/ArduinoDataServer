@@ -75,7 +75,7 @@ fabric.properties
 
 venv/
 
-.env
+ArduinoDataServer/.env
 .db.sqlite3
 .idea
 db.sqlite3

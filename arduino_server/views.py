@@ -1,4 +1,6 @@
 from datetime import datetime
+
+import simplejson
 from django.contrib import messages
 from django.core.serializers import json
 from django.http import HttpResponse, HttpResponseRedirect
@@ -9,7 +11,7 @@ from arduino_server import models, forms
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
-
+import simplejson as json
 
 # Create your views here.
 def hello_world(request):
@@ -82,6 +84,7 @@ def meter(request, meter_id):
 
 
 def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
+
     interval_type = get_object_or_404(models.IntervalType, id=interval_type_id)
     intervals = models.Interval.objects.filter(interval_type=interval_type)
 
@@ -97,8 +100,9 @@ def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
 
     intervals = intervals.order_by('-from_time')
     max_entries = max_entries or request.GET.get('entries', None)
-    if max_entries:
-        intervals = intervals[:int(max_entries)]
+    # if max_entries:
+        # intervals = intervals[:int(max_entries)]
+
     intervals.reverse()
 
     def get_google_date(datetimeobj):
@@ -133,7 +137,8 @@ def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
             return "%s" % date(from_time, "F Y").title()
         return None
 
-    data = json.simplejson.dumps({
+    # data = json.simplejson.dumps({
+    data = simplejson.dumps({
         "cols": [
             {"id": "", "label": "", "pattern": "",
              "type": "datetime" if interval_type.name == models.INTERVAL_HOURLY else "date"},

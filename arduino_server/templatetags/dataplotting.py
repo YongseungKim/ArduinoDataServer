@@ -20,7 +20,7 @@ def google_chart(interval_type, show_entries=20, height="250px", from_time=None,
     }
 
 
-register.inclusion_tag('arduino_server/includes/google_chart.html', takes_context=False)(google_chart)
+register.inclusion_tag('arduino_server/include/google_chart.html', takes_context=False)(google_chart)
 
 
 @register.filter
