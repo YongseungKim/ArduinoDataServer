@@ -143,14 +143,17 @@ class IntervalType(models.Model):
     unit_name = models.CharField(max_length=255,
                                  help_text=_(u"Name the unit that's being summarised, for instance 'KWh'."))
     unit_fraction = models.FloatField(default=1, help_text=_(
-        u"If you are doing an annual summary, you might want to use a different unit than the one from the data entries. "
+        u"If you are doing an annual summary, "
+        u"you might want to use a different unit than the one from the data entries. "
         u"If for instance, you are receiving KWh data, you could enter 0.001 and input 'MWh' in the 'unit name' field. "
-        u"Note that this fraction will be applied to ALL meters in the summary, so they should be outputting the same type of unit."))
+        u"Note that this fraction will be applied to ALL meters in the summary, s"
+        u"o they should be outputting the same type of unit."))
 
     backlog = models.IntegerField(default=0, verbose_name=_(u"Backlog"),
                                   help_text=_(
                                       u"Number of days to keep old entries for. "
-                                      u"If you create a new summary and have the necessary data entries, summaries will be created until this point in time."))
+                                      u"If you create a new summary and have the necessary data entries, "
+                                      u"summaries will be created until this point in time."))
 
     force_recreate = models.BooleanField(default=False,
                                          help_text=_(

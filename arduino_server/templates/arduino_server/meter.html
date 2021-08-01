@@ -11,9 +11,7 @@
     {{ meter.description|linebreaks }}
 
     {% if meter.is_counter %}
-
     <div class="row">
-
       <div class="span4">
         <h2>{% trans "Latest data" %}</h2>
         <div class="well">
@@ -23,6 +21,7 @@
                 <td>{% trans "Latest update" %}:</td>
                 <td>{{ meter.get_latest_data.created|default:_("None") }}</td>
               </tr>
+
               {% if meter.is_counter %}
               <tr>
                 <td>{% trans "Last 5 minutes" %}:</td>
@@ -49,7 +48,6 @@
         <h2>{% trans "Add data" %}</h2>
         {% if user %}
         <div class="well">
-
           <form method="POST">
             {% csrf_token %}
             <div class="row">

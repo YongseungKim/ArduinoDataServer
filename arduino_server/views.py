@@ -63,10 +63,10 @@ def meter(request, meter_id):
 
             data.save()  # db save
             messages.success(request, _(u"Data entry added and summaries updated!"))
-            return HttpResponseRedirect(reverse('arduino_server:arduino_server_meter', args=(meter.id,)))
+            # return HttpResponseRedirect(reverse('arduino_server:arduino_server_meter', args=(meter.id,)))
             # return redirect('arduino_server/meter.html', meter.id)
             # return render(request, 'arduino_server/meter.html', {'arduino_server_meter': meter})
-            # return redirect('arduino_server:arduino_server_meter', meter.id)
+            return redirect('arduino_server:arduino_server_meter', meter.id)
     else:
         data_form = forms.MeterDataForm(
             initial={'created_date': request.session.get('created_date', datetime.now().date),
@@ -100,8 +100,13 @@ def interval_json(request, interval_type_id, max_entries=24, hide_unfinished=0):
 
     intervals = intervals.order_by('-from_time')
     max_entries = max_entries or request.GET.get('entries', None)
-    # if max_entries:
-        # intervals = intervals[:int(max_entries)]
+    if max_entries:
+        print('max_entries:', max_entries)
+        print('type intervals', intervals)
+        for interval in intervals:
+            print('interval:', interval.from_time)
+
+        intervals = intervals[:int(max_entries)]
 
     intervals.reverse()
 
